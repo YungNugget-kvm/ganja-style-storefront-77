@@ -4,7 +4,7 @@ import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { createClient } from "@supabase/supabase-js";
+
 import { useToast } from "@/hooks/use-toast";
 import vapePen1 from "@/assets/vape-pen-1.jpg";
 
@@ -124,10 +124,6 @@ const StarRating = ({ rating, reviewCount }: { rating: number; reviewCount: numb
   );
 };
 
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL!,
-  import.meta.env.VITE_SUPABASE_ANON_KEY!
-);
 
 export const ProductDetail = () => {
   const { id } = useParams();
@@ -138,30 +134,12 @@ export const ProductDetail = () => {
 
   const handleBuyNow = async () => {
     if (!product) return;
-
-    try {
-      const { data, error } = await supabase.functions.invoke('create-payment', {
-        body: {
-          productId: product.id,
-          productName: product.name,
-          price: product.price,
-        },
-      });
-
-      if (error) throw error;
-
-      if (data?.url) {
-        // Redirect to Stripe Checkout
-        window.location.href = data.url;
-      }
-    } catch (error) {
-      console.error('Error creating payment:', error);
-      toast({
-        title: "Payment Error",
-        description: "Unable to process payment. Please try again.",
-        variant: "destructive",
-      });
-    }
+    toast({
+      title: "Payments not configured",
+      description: "Connect Supabase (top-right) and add your Stripe secret key to enable Buy Now.",
+      variant: "destructive",
+    });
+    window.open("https://docs.lovable.dev/integrations/supabase/", "_blank");
   };
   
   if (!product) {
