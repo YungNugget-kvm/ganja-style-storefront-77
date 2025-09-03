@@ -1,6 +1,7 @@
 import { Star } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 interface Product {
   id: number;
@@ -37,6 +38,12 @@ const StarRating = ({ rating, reviewCount }: { rating: number; reviewCount: numb
 };
 
 export const ProductSection = ({ title, products, showMore = true }: ProductSectionProps) => {
+  const navigate = useNavigate();
+
+  const handleProductClick = (productId: number) => {
+    navigate(`/product/${productId}`);
+  };
+
   return (
     <section className="py-12">
       <div className="container mx-auto px-4">
@@ -55,6 +62,7 @@ export const ProductSection = ({ title, products, showMore = true }: ProductSect
               key={product.id} 
               className="group cursor-pointer transform transition-all duration-300 hover:scale-105 hover:shadow-lg"
               style={{ boxShadow: 'var(--shadow-card)' }}
+              onClick={() => handleProductClick(product.id)}
             >
               <CardContent className="p-4">
                 <div className="aspect-square mb-4 overflow-hidden rounded-lg bg-muted">
