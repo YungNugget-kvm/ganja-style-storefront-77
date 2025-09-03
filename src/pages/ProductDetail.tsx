@@ -1,9 +1,11 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Star, ShoppingCart } from "lucide-react";
+import { ArrowLeft, Star, CreditCard } from "lucide-react";
 import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { createClient } from "@supabase/supabase-js";
+import { useToast } from "@/hooks/use-toast";
 import vapePen1 from "@/assets/vape-pen-1.jpg";
 
 interface Product {
@@ -122,11 +124,45 @@ const StarRating = ({ rating, reviewCount }: { rating: number; reviewCount: numb
   );
 };
 
+const supabase = createClient(
+  import.meta.env.VITE_SUPABASE_URL!,
+  import.meta.env.VITE_SUPABASE_ANON_KEY!
+);
+
 export const ProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { toast } = useToast();
   
   const product = sampleProducts.find(p => p.id === parseInt(id || ''));
+
+  const handleBuyNow = async () => {
+    if (!product) return;
+
+    try {
+      const { data, error } = await supabase.functions.invoke('create-payment', {
+        body: {
+          productId: product.id,
+          productName: product.name,
+          price: product.price,
+        },
+      });
+
+      if (error) throw error;
+
+      if (data?.url) {
+        // Redirect to Stripe Checkout
+        window.location.href = data.url;
+      }
+    } catch (error) {
+      console.error('Error creating payment:', error);
+      toast({
+        title: "Payment Error",
+        description: "Unable to process payment. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
   
   if (!product) {
     return (
@@ -212,12 +248,12 @@ export const ProductDetail = () => {
 
             <Card className="p-6 bg-accent/50">
               <CardContent className="p-0">
-                <Button size="lg" className="w-full mb-4">
-                  <ShoppingCart className="h-5 w-5 mr-2" />
-                  Add to Cart
+                <Button size="lg" className="w-full mb-4" onClick={handleBuyNow}>
+                  <CreditCard className="h-5 w-5 mr-2" />
+                  Buy Now - {product.price}
                 </Button>
                 <div className="text-sm text-muted-foreground text-center">
-                  Secure checkout • 30-day return policy
+                  Secure checkout • 30-day return policy • Guest checkout available
                 </div>
               </CardContent>
             </Card>
